@@ -8,6 +8,9 @@
 
 # testing
 /coverage
+.env.sample
+executionContractAddresses.json
+sharedConfig.json
 
 # production
 /build
