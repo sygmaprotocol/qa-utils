@@ -111,6 +111,217 @@ export async function testEvmToEvmRoutes(
   return result
 }
 
+export async function onlySourceCustom(
+  ethereumConfigs: Array<EthereumConfig>, // checks shared config 
+  rpcEndpoints: RpcEndpoints, //check local settup for RPC
+  evmWallet: Wallet, // Signer - Provider capabilities
+  environment: Environment, // checks env Setting
+  depositAmount: string,
+  executionContractAddress: ExecutionContractAddress, // check locl contract JSON
+  sourceDomainId: number[],
+  testResourceType: string
+): Promise<string> {
+  let result = ""
+  for (const network of ethereumConfigs) {
+    const functionCalls = [] as any
+    if(sourceDomainId.includes(network.id)) {
+    const sourceProvider = new providers.JsonRpcProvider(rpcEndpoints[network.chainId])
+    evmWallet = new Wallet(evmWallet.privateKey, sourceProvider)
+
+    for (const resource of network.resources) {
+      for (const destinationDomain of ethereumConfigs) {
+        const loggingData = {
+          resourceId: resource.resourceId,
+          sourceDomainId: network.id,
+          sourceDomainName: network.name,
+          destinationDomainId: destinationDomain.id,
+          destinationDomainName: destinationDomain.name
+        }
+        try {
+          const destinationProvider = new providers.JsonRpcProvider(rpcEndpoints[destinationDomain.chainId])
+
+          if (destinationDomain.id == network.id) {
+            continue
+          }
+
+          for (const destinationResource of destinationDomain.resources as unknown as Array<EvmResource>) {
+            if (destinationResource.resourceId === resource.resourceId) {
+              switch (testResourceType) {
+                case "Fungible":
+                  if(resource.type === ResourceType.FUNGIBLE) {
+                  const valueBefore = await fetchTokenAmount(
+                    destinationProvider,
+                    await evmWallet.getAddress(),
+                    destinationResource.address
+                  )
+
+                  print.info(`Transfer ${depositAmount} ${resource.symbol} from domainID: ${network.id} to domainID: ${destinationDomain.id}`)
+                  await makeFungibleTransfer(sourceProvider, environment, evmWallet, destinationDomain, resource, depositAmount)
+
+                  functionCalls.push(waitUntilBridgedFungibleEvm(
+                    loggingData,
+                    result,
+                    valueBefore,
+                    await evmWallet.getAddress(),
+                    destinationResource.address,
+                    destinationProvider
+                  )) }
+                  break
+                case "GMP":
+                  if(resource.type === ResourceType.PERMISSIONLESS_GENERIC) {
+                  if(executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`]) {
+                    const contractValueBefore = await fetchGenericContractValue(
+                      executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`],
+                      destinationProvider,
+                      await evmWallet.getAddress()
+                    )
+
+                    print.info(`Transfer generic message (resource:${resource.resourceId}) from ${network.id} to ${destinationDomain.id}`)
+                    await makeGenericTransfer(sourceProvider, environment, evmWallet, destinationDomain, resource, executionContractAddress)
+                    
+                    functionCalls.push(waitUntilBridgedGenericEvm(
+                      loggingData,
+                      result,
+                      contractValueBefore,
+                      executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`],
+                      destinationProvider,
+                      await evmWallet.getAddress()
+                    ))
+                  } }
+                  break
+                case "NonFungible":
+                  print.warning("not implemented for type: " + ResourceType.NON_FUNGIBLE);
+                  break;
+                case "PermissionedGeneric":
+                  print.warning(
+                    'not implemented for type: ' + ResourceType.NON_FUNGIBLE
+                  )
+                  break
+                default:
+                  print.error(`INVALID RESOURCE TYPE`)
+              }
+            }
+          }
+
+        } catch (err) {
+          print.error(err)
+          result += `\n resource ${loggingData.resourceId} unable to bridged from domain ${loggingData.sourceDomainId}(${loggingData.sourceDomainName}) to domain ${loggingData.destinationDomainId}(${loggingData.destinationDomainName}) - FAILED \n`
+        }
+      }
+    }
+    result += (await Promise.all(functionCalls)).join("\n")
+    }
+  }
+  return result
+}
+
+export async function onlyDestinationCustom(
+  ethereumConfigs: Array<EthereumConfig>, // checks shared config 
+  rpcEndpoints: RpcEndpoints, //check local settup for RPC
+  evmWallet: Wallet, // Signer - Provider capabilities
+  environment: Environment, // checks env Setting
+  depositAmount: string,
+  executionContractAddress: ExecutionContractAddress, // check locl contract JSON
+  destinationDomainIDs: number[],
+  testResourceType: string
+): Promise<string> {
+  let result = ""
+  for (const network of ethereumConfigs) {
+    if(!destinationDomainIDs.includes(network.id)) {
+    const sourceProvider = new providers.JsonRpcProvider(rpcEndpoints[network.chainId])
+    evmWallet = new Wallet(evmWallet.privateKey, sourceProvider)
+    const functionCalls = [] as any
+
+    for (const resource of network.resources) {
+      for (const destinationDomain of ethereumConfigs) {
+        const loggingData = {
+          resourceId: resource.resourceId,
+          sourceDomainId: network.id,
+          sourceDomainName: network.name,
+          destinationDomainId: destinationDomain.id,
+          destinationDomainName: destinationDomain.name
+        }
+        try {
+          const destinationProvider = new providers.JsonRpcProvider(rpcEndpoints[destinationDomain.chainId])
+
+          if (destinationDomain.id == network.id) {
+            continue
+          }
+
+          for (const destinationResource of destinationDomain.resources as unknown as Array<EvmResource>) {
+            if (destinationResource.resourceId === resource.resourceId) {
+              if(destinationDomainIDs.includes(destinationDomain.id)) {
+              switch (testResourceType) {
+                case "Fungible":
+                  if (resource.type === ResourceType.FUNGIBLE) {
+                  const valueBefore = await fetchTokenAmount(
+                    destinationProvider,
+                    await evmWallet.getAddress(),
+                    destinationResource.address
+                  )
+
+                  print.info(`Transfer ${depositAmount} ${resource.symbol} from domainID: ${network.id} to domainID: ${destinationDomain.id}`)
+                  await makeFungibleTransfer(sourceProvider, environment, evmWallet, destinationDomain, resource, depositAmount)
+
+                  functionCalls.push(waitUntilBridgedFungibleEvm(
+                    loggingData,
+                    result,
+                    valueBefore,
+                    await evmWallet.getAddress(),
+                    destinationResource.address,
+                    destinationProvider
+                  )) 
+                  }
+                  break
+                case "GMP":
+                  if (resource.type === ResourceType.PERMISSIONLESS_GENERIC) {
+                  if(executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`]) {
+                    const contractValueBefore = await fetchGenericContractValue(
+                      executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`],
+                      destinationProvider,
+                      await evmWallet.getAddress()
+                    )
+
+                    print.info(`Transfer generic message (resource:${resource.resourceId}) from ${network.id} to ${destinationDomain.id}`)
+                    await makeGenericTransfer(sourceProvider, environment, evmWallet, destinationDomain, resource, executionContractAddress)
+                    
+                    functionCalls.push(waitUntilBridgedGenericEvm(
+                      loggingData,
+                      result,
+                      contractValueBefore,
+                      executionContractAddress[`EXECUTE_CONTRACT_ADDRESS_${destinationDomain.id}`],
+                      destinationProvider,
+                      await evmWallet.getAddress()
+                    ))
+                  } }
+                  break
+                case "NonFungible":
+                  print.warning("not implemented for type: " + ResourceType.NON_FUNGIBLE);
+                  break;
+                case "Permissioned_Generic":
+                  print.warning(
+                    'not implemented for type: ' + ResourceType.NON_FUNGIBLE
+                  )
+                  break
+                default:
+                  print.error(`INVALID RESOURCE TYPE`)
+              }
+            }
+            }
+          }
+
+        } catch (err) {
+          print.error(err)
+          result += `\n resource ${loggingData.resourceId} unable to bridged from domain ${loggingData.sourceDomainId}(${loggingData.sourceDomainName}) to domain ${loggingData.destinationDomainId}(${loggingData.destinationDomainName}) - FAILED \n`
+        }
+      }
+    }
+    result += (await Promise.all(functionCalls)).join("\n")
+  }
+  }
+  return result
+}
+
 async function makeFungibleTransfer(sourceProvider: providers.JsonRpcProvider, environment: Environment, evmWallet: Wallet, destinationDomain: EthereumConfig, resource: Resource, depositAmount: string) {
   const assetTransfer = new EVMAssetTransfer()
   await assetTransfer.init(

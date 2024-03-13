@@ -19,6 +19,11 @@ module.exports = (toolbox: GluegunToolbox) => {
       message: "Insert generic handler testing contract config file path",
     })
 
+    // const executionContractAddress = filesystem.read(
+    //   'executionContractAddresses.json',
+    //   'json'
+    // )  
+
     toolbox.path = result.path
     return result.path
   }
