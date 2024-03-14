@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import { KeyringPair } from '@polkadot/keyring/types'
 import { GluegunToolbox, filesystem, print } from 'gluegun'
 import {
@@ -15,7 +16,7 @@ import { testSubstrateToEvmRoutes } from '../../utils'
 module.exports = {
   name: 'test-routes',
   run: async (toolbox: GluegunToolbox) => {
-    const { sharedConfig, wallet, depositAmount, path } = toolbox
+    const { sharedConfig, wallet, depositAmount } = toolbox
 
     const rawConfig = await sharedConfig.fetchSharedConfig()
 
@@ -38,10 +39,9 @@ module.exports = {
     ) as RpcEndpoints
 
     let amount = await depositAmount.getDepositAmount()
-    const executionContractAddressesPath = await path.getGenericHandlerTestingContractAddresses()
 
     const executionContractAddress = filesystem.read(
-      executionContractAddressesPath,
+      'executionContractAddresses.json',
       'json'
     )
 

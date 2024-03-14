@@ -1,4 +1,4 @@
-
+/* eslint-disable */ 
 import { EVMAssetTransfer, EVMGenericMessageTransfer, Environment, EthereumConfig, EvmResource, Resource, ResourceType } from '@buildwithsygma/sygma-sdk-core'
 import { BigNumber, Wallet, providers, utils } from 'ethers'
 import { RpcEndpoints } from '../../types'
@@ -12,7 +12,7 @@ type ExecutionContractAddress = {
 }
 
 const EXECUTE_FUNCTION_SIGNATURE = '0xa271ced2'
-const MAX_FEE = '500000' // for GMP
+const MAX_FEE = '999999' // for GMP
 export async function testEvmToEvmRoutes(
   ethereumConfigs: Array<EthereumConfig>,
   rpcEndpoints: RpcEndpoints,

@@ -1,20 +1,24 @@
+/* eslint-disable */ 
 import { GluegunToolbox, filesystem, print } from 'gluegun'
 import {
   EthereumConfig,
-  Network
+  Network,
 } from '@buildwithsygma/sygma-sdk-core'
 import { Wallet } from 'ethers'
 import { InitializedWallets, RpcEndpoints } from '../../types'
 
 import {onlySourceCustom, onlyDestinationCustom } from '../../utils/evm/testEVMToEVMRoutes'
 
-// This Module can test one; multiple; or ALL domain IDs and only 1 Resource TYPE ( but all IDs)
+// Flags: env -> local, devnet, testnet, mainnet domains -> 2, 5, 6, 7, 8, 9 |  resource -> Fungible, GMP, NonFungible, PermissionedGeneric
 module.exports = {
   name: 'custom-evm-tests',
   run: async (toolbox: GluegunToolbox) => {
-    const { sharedConfig, wallet, depositAmount, path, parameters} = toolbox
+    const { sharedConfig, wallet, depositAmount, parameters } = toolbox
 
-    let testDomainIDs: number[] = [] // provide 1,2,3,4 ex domain IDs
+    
+    const rawConfig = await sharedConfig.fetchSharedConfig()
+
+    let testDomainIDs: number[] = [] // provide 2, 5, 6, 7, 8, 9 ex domain IDs
     let testResrouceType: string = '' //Values: Fungible, GMP, NonFungible, PermissionedGeneric
 
     if (parameters.options.domains.length == 1) {
@@ -22,7 +26,7 @@ module.exports = {
     } else if (parameters.options.domains.length > 1) {
       testDomainIDs = parameters.options.domains.split(',').map(Number)
     } else {
-        testDomainIDs = [2, 3, 5, 6, 7, 8, 9]
+        testDomainIDs = [2, 5, 6, 7, 8, 9]
     }
 
     if(parameters.options.resource.length > 1) {
@@ -33,8 +37,6 @@ module.exports = {
 
     // console.log("This is parameters.domains options: ", testDomainIDs)
     // console.log("This is parameters.resrource options: ", testResrouceType)
-
-    const rawConfig = await sharedConfig.fetchSharedConfig()
 
     const { env } = toolbox
     const initializedWallets = (await wallet.initializeWallets(
@@ -51,15 +53,13 @@ module.exports = {
     ) as RpcEndpoints
 
     let amount = await depositAmount.getDepositAmount()
-    const executionContractAddressesPath =
-      await path.getGenericHandlerTestingContractAddresses()
 
-    const executionContractAddress = filesystem.read(
-      executionContractAddressesPath,
-      'json'
-    )
+      const executionContractAddress = filesystem.read(
+        'executionContractAddresses.json',
+        'json'
+      )
 
-    const onlySourceAllResult = await onlySourceCustom(
+      const onlySourceAllResult = await onlySourceCustom(
         evmNetworks,
         rpcEndpoints,
         initializedWallets[Network.EVM] as Wallet,
@@ -82,5 +82,5 @@ module.exports = {
       )
   
       print.info(onlySourceAllResult + onlyDestinationAllResult)
-  },
+   }
 }
