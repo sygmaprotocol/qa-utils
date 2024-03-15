@@ -119,7 +119,8 @@ export async function onlySourceCustom(
   depositAmount: string,
   executionContractAddress: ExecutionContractAddress, // check locl contract JSON
   sourceDomainId: number[],
-  testResourceType: string
+  testResourceType: string,
+  resourceIds: string []
 ): Promise<string> {
   let result = ""
   for (const network of ethereumConfigs) {
@@ -145,7 +146,7 @@ export async function onlySourceCustom(
           }
 
           for (const destinationResource of destinationDomain.resources as unknown as Array<EvmResource>) {
-            if (destinationResource.resourceId === resource.resourceId) {
+            if (destinationResource.resourceId === resource.resourceId && resourceIds.includes(resource.resourceId)) {
               switch (testResourceType) {
                 case "Fungible":
                   if(resource.type === ResourceType.FUNGIBLE) {
@@ -223,7 +224,8 @@ export async function onlyDestinationCustom(
   depositAmount: string,
   executionContractAddress: ExecutionContractAddress, // check locl contract JSON
   destinationDomainIDs: number[],
-  testResourceType: string
+  testResourceType: string,
+  resourceIds: string []
 ): Promise<string> {
   let result = ""
   for (const network of ethereumConfigs) {
@@ -249,7 +251,7 @@ export async function onlyDestinationCustom(
           }
 
           for (const destinationResource of destinationDomain.resources as unknown as Array<EvmResource>) {
-            if (destinationResource.resourceId === resource.resourceId) {
+            if (destinationResource.resourceId === resource.resourceId && resourceIds.includes(resource.resourceId)) {
               if(destinationDomainIDs.includes(destinationDomain.id)) {
               switch (testResourceType) {
                 case "Fungible":

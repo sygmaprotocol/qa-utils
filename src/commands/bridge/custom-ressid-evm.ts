@@ -11,18 +11,25 @@ import {onlySourceCustom, onlyDestinationCustom } from '../../utils/evm/testEVMT
 
 // Flags: env -> local, devnet, testnet, mainnet domains -> 2, 5, 6, 7, 8, 9 |  resource -> Fungible, GMP, NonFungible, PermissionedGeneric
 module.exports = {
-  name: 'custom-evm-tests',
+  name: 'custom-ressid-evm',
   run: async (toolbox: GluegunToolbox) => {
     const { sharedConfig, wallet, depositAmount, path, parameters } = toolbox
-
     
     const rawConfig = await sharedConfig.fetchSharedConfig()
 
-    const resourceId_testnet = ['0x0000000000000000000000000000000000000000000000000000000000000200', '0x0000000000000000000000000000000000000000000000000000000000000300','0x0000000000000000000000000000000000000000000000000000000000000500',
-                                '0x0000000000000000000000000000000000000000000000000000000000000600', '0x0000000000000000000000000000000000000000000000000000000000001100', '0x0000000000000000000000000000000000000000000000000000000000001000']
     let testDomainIDs: number[] = [] // provide 2, 5, 6, 7, 8, 9 ex domain IDs
     let testResrouceType: string = '' //Values: Fungible, GMP, NonFungible, PermissionedGeneric
-    
+    let resourceId_testnet: string[] = []; // Values from ress id: 200, 600, 300, 500, 600, 1000, 1100
+
+    if (typeof parameters.options.ressid !== 'number' ){
+        resourceId_testnet = ['0x0000000000000000000000000000000000000000000000000000000000000200', '0x0000000000000000000000000000000000000000000000000000000000000300','0x0000000000000000000000000000000000000000000000000000000000000500',
+                                '0x0000000000000000000000000000000000000000000000000000000000000600', '0x0000000000000000000000000000000000000000000000000000000000001100', '0x0000000000000000000000000000000000000000000000000000000000001000']
+    } else {
+        resourceId_testnet.push(`0x0000000000000000000000000000000000000000000000000000000000000${parameters.options.ressid}`)
+    }
+    console.log('Type of ressid ',typeof parameters.options.ressid)
+    console.log("This is from original FILE resourceId_testnet", resourceId_testnet)
+
     //Set the default flag behavior for domains
     if (typeof parameters.options.domains !== 'string') {
       testDomainIDs = [2, 5, 6, 7, 8, 9]

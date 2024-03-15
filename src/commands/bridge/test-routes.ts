@@ -16,7 +16,7 @@ import { testSubstrateToEvmRoutes } from '../../utils'
 module.exports = {
   name: 'test-routes',
   run: async (toolbox: GluegunToolbox) => {
-    const { sharedConfig, wallet, depositAmount } = toolbox
+    const { sharedConfig, wallet, depositAmount, path} = toolbox
 
     const rawConfig = await sharedConfig.fetchSharedConfig()
 
@@ -39,9 +39,10 @@ module.exports = {
     ) as RpcEndpoints
 
     let amount = await depositAmount.getDepositAmount()
+    const executionContractAddressesPath = await path.getGenericHandlerTestingContractAddresses()
 
     const executionContractAddress = filesystem.read(
-      'executionContractAddresses.json',
+      executionContractAddressesPath,
       'json'
     )
 

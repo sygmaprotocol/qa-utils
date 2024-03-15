@@ -1,5 +1,5 @@
 /* eslint-disable */ 
-import { GluegunToolbox, prompt } from 'gluegun'
+import { GluegunToolbox } from 'gluegun'
 import * as dotenv from 'dotenv'
 
 dotenv.config();
@@ -20,12 +20,7 @@ module.exports = (toolbox: GluegunToolbox) => {
   }
 
   async function getGenericHandlerTestingContractAddresses(): Promise<string> {
-    const result: { path: string } = await prompt.ask({
-      type: 'input',
-      name: 'path',
-      message: "Insert generic handler testing contract config file path",
-    })
-
+    const result: { path: string } = {path: process.env.LOCAL_GENERIC_HANDLER_PATH || ""}
     toolbox.path = result.path
     return result.path
   }

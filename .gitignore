@@ -8,7 +8,7 @@
 
 # testing
 /coverage
-.env.sample
+.env
 executionContractAddresses.json
 sharedConfig.json
 
