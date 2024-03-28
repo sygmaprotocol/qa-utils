@@ -1,48 +1,53 @@
 /* eslint-disable */ 
-import { KeyringPair } from '@polkadot/keyring/types'
 import { GluegunToolbox, filesystem, print } from 'gluegun'
 import {
   EthereumConfig,
-  Network,
-  SubstrateConfig
+  Network
 } from '@buildwithsygma/sygma-sdk-core'
 import { Wallet } from 'ethers'
 import { InitializedWallets, RpcEndpoints } from '../../types'
-import {onlySourceCustom, onlyDestinationCustom } from '../../utils/evm/testEVMToEVMRoutes'
-import { testSourceEvmToSubstrateRoutes } from '../../utils/evm/testEVMToSubstrateRoutes'
+import {testCustomSourceToCustomDest } from '../../utils/evm/testEVMToEVMRoutes'
 
+// STILL IN PROGRESS ( not fully tested) ( ressid not added yet)
 // Flags: env -> local, devnet, testnet, mainnet domains -> 2, 5, 6, 7, 8, 9, 10 |  resource -> Fungible, GMP, NonFungible, PermissionedGeneric
-// EX of use -> ./bin/maintenance-utils bridge custom-evm-tests --env testnet --domains 2,5,6 --resource Fungible
+// Ex of use -> ./bin/maintenance-utils bridge custom-source-dest --sdomains 2 --ddomains 9,10 --resource GMP  
 module.exports = {
-  name: 'custom-evm-tests',
+  name: 'custom-source-dest',
   run: async (toolbox: GluegunToolbox) => {
     const { sharedConfig, wallet, depositAmount, path, parameters } = toolbox
 
     
     const rawConfig = await sharedConfig.fetchSharedConfig()
 
-    const substrateNetworks = rawConfig.domains.filter(
-      (domain) => domain.type === Network.SUBSTRATE
-    ) as Array<SubstrateConfig>
 
     const resourceId_testnet = ['0x0000000000000000000000000000000000000000000000000000000000000200', '0x0000000000000000000000000000000000000000000000000000000000000300','0x0000000000000000000000000000000000000000000000000000000000000500',
                                 '0x0000000000000000000000000000000000000000000000000000000000000600', '0x0000000000000000000000000000000000000000000000000000000000001100', '0x0000000000000000000000000000000000000000000000000000000000001000']
-    let testDomainIDs: number[] = [] // provide 2, 5, 6, 7, 8, 9 ex domain IDs
+    let testSourceDomainIDs: number[] = [] // provide 2, 5, 6, 7, 8, 9 ex domain IDs
     let testResrouceType: string = '' //Values: Fungible, GMP, NonFungible, PermissionedGeneric
+    let testDestDomainIDs: number[] = [] // provide 2, 5, 6, 7, 8, 9 ex domain IDs
     
     //Set the default flag behavior for domains
-    console.log("PARAM DOMAINS",parameters.options.domains)
-    console.log("PARAM DOMAINS LENGHT",parameters.options.domains.length)
-    console.log("PARAM DOMAINS type", typeof parameters.options.domains)
-    if (typeof parameters.options.domains !== 'string' && typeof parameters.options.domains !== 'number') {
-      testDomainIDs = [2, 5, 6, 7, 8, 9, 10]
-    } else if (typeof parameters.options.domains === 'number' ) {
-      testDomainIDs.push(parameters.options.domains)
+    if (typeof parameters.options.sdomains !== 'string' && typeof parameters.options.sdomains !== 'number') {
+        testSourceDomainIDs = [2, 5, 6, 7, 8, 9, 10]
+    } else if (typeof parameters.options.sdomains === 'number' ) {
+        testSourceDomainIDs.push(parameters.options.sdomains)
     } else {
-      testDomainIDs = parameters.options.domains.split(',').map(Number)
+        testSourceDomainIDs = parameters.options.sdomains.split(',').map(Number)
     }
 
-    console.log("TEST DOMAINS",testDomainIDs)
+    if (typeof parameters.options.ddomains !== 'string' && typeof parameters.options.ddomains !== 'number') {
+        testDestDomainIDs = [2, 5, 6, 7, 8, 9, 10]
+    } else if (typeof parameters.options.ddomains === 'number' ) {
+        testDestDomainIDs.push(parameters.options.ddomains)
+    } else {
+        testDestDomainIDs = parameters.options.ddomains.split(',').map(Number)
+    }
+
+    console.log("TEST sdomains ",parameters.options.sdomains)
+    console.log("TEST ddomains ",parameters.options.ddomains)
+
+    console.log("TEST SOURCE DOMAINS",testSourceDomainIDs)
+    console.log("TEST DEST DOMAINS",testDestDomainIDs)
 
     //Set the default flag behavior for resource
     if(typeof parameters.options.resource !== 'string') {
@@ -76,40 +81,20 @@ module.exports = {
       'json'
     )
 
-      const onlySourceAllResult = await onlySourceCustom(
-        evmNetworks,
-        rpcEndpoints,
-        initializedWallets[Network.EVM] as Wallet,
-        env,
-        amount,
-        executionContractAddress,
-        testDomainIDs,
-        testResrouceType,
-        resourceId_testnet
-      )
+        const customSourceToCustomDest =  await testCustomSourceToCustomDest(
+            evmNetworks,
+            rpcEndpoints,
+            initializedWallets[Network.EVM] as Wallet,
+            env,
+            amount,
+            executionContractAddress,
+            testSourceDomainIDs,
+            testDestDomainIDs,
+            testResrouceType,
+            resourceId_testnet
+          )
 
-      const onlyDestinationAllResult = await onlyDestinationCustom(
-        evmNetworks,
-        rpcEndpoints,
-        initializedWallets[Network.EVM] as Wallet,
-        env,
-        amount,
-        executionContractAddress,
-        testDomainIDs,
-        testResrouceType,
-        resourceId_testnet
-      )
 
-      const evmSourceToSubstrateDest = await testSourceEvmToSubstrateRoutes(
-          evmNetworks,
-          substrateNetworks,
-          rpcEndpoints,
-          initializedWallets[Network.EVM] as Wallet,
-          initializedWallets[Network.SUBSTRATE] as unknown as KeyringPair,
-          env,
-          testDomainIDs
-        )
-
-      print.info(onlySourceAllResult + onlyDestinationAllResult + evmSourceToSubstrateDest)
+      print.info(customSourceToCustomDest)
    }
 }

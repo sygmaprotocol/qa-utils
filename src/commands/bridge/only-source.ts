@@ -1,29 +1,24 @@
 /* eslint-disable */ 
-import { KeyringPair } from '@polkadot/keyring/types'
 import { GluegunToolbox, filesystem, print } from 'gluegun'
 import {
   EthereumConfig,
-  Network,
-  SubstrateConfig
+  Network
 } from '@buildwithsygma/sygma-sdk-core'
 import { Wallet } from 'ethers'
 import { InitializedWallets, RpcEndpoints } from '../../types'
-import {onlySourceCustom, onlyDestinationCustom } from '../../utils/evm/testEVMToEVMRoutes'
-import { testSourceEvmToSubstrateRoutes } from '../../utils/evm/testEVMToSubstrateRoutes'
+import {onlySourceCustom } from '../../utils/evm/testEVMToEVMRoutes'
 
+// STILL IN PROGRESS ( not fully tested)
 // Flags: env -> local, devnet, testnet, mainnet domains -> 2, 5, 6, 7, 8, 9, 10 |  resource -> Fungible, GMP, NonFungible, PermissionedGeneric
-// EX of use -> ./bin/maintenance-utils bridge custom-evm-tests --env testnet --domains 2,5,6 --resource Fungible
+// Ex of use -> ./bin/maintenance-utils bridge only-source --domains 2 --resource Fungible
 module.exports = {
-  name: 'custom-evm-tests',
+  name: 'only-source',
   run: async (toolbox: GluegunToolbox) => {
     const { sharedConfig, wallet, depositAmount, path, parameters } = toolbox
 
     
     const rawConfig = await sharedConfig.fetchSharedConfig()
 
-    const substrateNetworks = rawConfig.domains.filter(
-      (domain) => domain.type === Network.SUBSTRATE
-    ) as Array<SubstrateConfig>
 
     const resourceId_testnet = ['0x0000000000000000000000000000000000000000000000000000000000000200', '0x0000000000000000000000000000000000000000000000000000000000000300','0x0000000000000000000000000000000000000000000000000000000000000500',
                                 '0x0000000000000000000000000000000000000000000000000000000000000600', '0x0000000000000000000000000000000000000000000000000000000000001100', '0x0000000000000000000000000000000000000000000000000000000000001000']
@@ -88,28 +83,6 @@ module.exports = {
         resourceId_testnet
       )
 
-      const onlyDestinationAllResult = await onlyDestinationCustom(
-        evmNetworks,
-        rpcEndpoints,
-        initializedWallets[Network.EVM] as Wallet,
-        env,
-        amount,
-        executionContractAddress,
-        testDomainIDs,
-        testResrouceType,
-        resourceId_testnet
-      )
-
-      const evmSourceToSubstrateDest = await testSourceEvmToSubstrateRoutes(
-          evmNetworks,
-          substrateNetworks,
-          rpcEndpoints,
-          initializedWallets[Network.EVM] as Wallet,
-          initializedWallets[Network.SUBSTRATE] as unknown as KeyringPair,
-          env,
-          testDomainIDs
-        )
-
-      print.info(onlySourceAllResult + onlyDestinationAllResult + evmSourceToSubstrateDest)
+      print.info(onlySourceAllResult)
    }
 }

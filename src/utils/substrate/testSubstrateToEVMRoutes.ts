@@ -1,4 +1,4 @@
-
+/* eslint-disable */ 
 import { Environment, EthereumConfig, EvmResource, Substrate, SubstrateConfig } from '@buildwithsygma/sygma-sdk-core'
 import { Wallet, providers } from 'ethers'
 import { RpcEndpoints } from '../../types'
