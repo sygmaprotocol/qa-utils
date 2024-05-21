@@ -18,7 +18,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config();
 
-const DEPOSIT_AMOUNT = process.env.TRANSFER_AMOUNT_SUBSTRATE || ""
+const DEPOSIT_AMOUNT = process.env.TRANSFER_AMOUNT_EVM || ""
 
 export async function testEvmToSubstrateRoutes(
   ethereumConfigs: Array<EthereumConfig>,

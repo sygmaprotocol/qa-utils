@@ -1,12 +1,15 @@
 /* eslint-disable */ 
 import { GluegunToolbox, filesystem, print } from 'gluegun'
+import { KeyringPair } from '@polkadot/keyring/types'
 import {
   EthereumConfig,
-  Network
+  Network,
+  SubstrateConfig
 } from '@buildwithsygma/sygma-sdk-core'
 import { Wallet } from 'ethers'
 import { InitializedWallets, RpcEndpoints } from '../../types'
 import {onlySourceCustom } from '../../utils/evm/testEVMToEVMRoutes'
+import { testSourceEvmToSubstrateRoutes } from '../../utils/evm/testEVMToSubstrateRoutes'
 
 // STILL IN PROGRESS ( not fully tested)
 // Flags: env -> local, devnet, testnet, mainnet domains -> 2, 5, 6, 7, 8, 9, 10 |  resource -> Fungible, GMP, NonFungible, PermissionedGeneric
@@ -18,6 +21,10 @@ module.exports = {
 
     
     const rawConfig = await sharedConfig.fetchSharedConfig()
+
+    const substrateNetworks = rawConfig.domains.filter(
+      (domain) => domain.type === Network.SUBSTRATE
+    ) as Array<SubstrateConfig>
 
 
     const resourceId_testnet = ['0x0000000000000000000000000000000000000000000000000000000000000200', '0x0000000000000000000000000000000000000000000000000000000000000300','0x0000000000000000000000000000000000000000000000000000000000000500',
@@ -83,6 +90,17 @@ module.exports = {
         resourceId_testnet
       )
 
-      print.info(onlySourceAllResult)
+      const evmSourceToSubstrateDest = await testSourceEvmToSubstrateRoutes(
+        evmNetworks,
+        substrateNetworks,
+        rpcEndpoints,
+        initializedWallets[Network.EVM] as Wallet,
+        initializedWallets[Network.SUBSTRATE] as unknown as KeyringPair,
+        env,
+        testDomainIDs
+      )
+  
+
+      print.info(onlySourceAllResult + evmSourceToSubstrateDest)
    }
 }
