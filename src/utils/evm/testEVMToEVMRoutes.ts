@@ -123,6 +123,7 @@ export async function onlySourceCustom(
   resourceIds: string []
 ): Promise<string> {
   let result = ""
+  console.log("Env in Only Souyrce", environment)
   for (const network of ethereumConfigs) {
     const functionCalls = [] as any
     if(sourceDomainId.includes(network.id)) {

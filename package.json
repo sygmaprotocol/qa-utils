@@ -28,7 +28,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@buildwithsygma/sygma-contracts": "^2.4.1",
+    "@buildwithsygma/sygma-contracts": "latest",
     "@openzeppelin/contracts": "^4.9.3",
     "@polkadot/api": "^10.9.1",
     "@polkadot/keyring": "^12.3.2",
@@ -36,7 +36,7 @@
     "gluegun": "^5.1.2"
   },
   "devDependencies": {
-    "@buildwithsygma/sygma-sdk-core": "^2.4.0",
+    "@buildwithsygma/sygma-sdk-core": "^2.11.2",
     "@chainsafe/eslint-config": "^2.0.0",
     "@polkadot/types": "^10.9.1",
     "@rushstack/eslint-patch": "^1.3.2",
