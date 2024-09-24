@@ -1,3 +1,4 @@
 src/AbiTX/.env
 src/RawTX/.env
 src/SptrinterAPI/.env
+node_modules/
