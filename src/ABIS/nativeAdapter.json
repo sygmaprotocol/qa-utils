@@ -1,0 +1,172 @@
+[
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bridge",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "resourceID",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "FailedFundsTransfer",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "InsufficientMsgValueAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "MsgValueLowerThanFee",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SenderNotAdmin",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroGas",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "_bridge",
+      "outputs": [
+        {
+          "internalType": "contract IBridge",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_resourceID",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "destinationDomainID",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "recipientAddress",
+          "type": "string"
+        }
+      ],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "destinationDomainID",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes",
+          "name": "depositDataAfterAmount",
+          "type": "bytes"
+        }
+      ],
+      "name": "depositGeneral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "destinationDomainID",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "depositToEVM",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "destinationDomainID",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "message",
+          "type": "bytes"
+        }
+      ],
+      "name": "depositToEVMWithMessage",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ]
