@@ -1,7 +1,5 @@
-import { BigNumber } from 'ethers';
 import { Web3 } from 'web3';
 const fs = require('fs')
-const fetch = require('node-fetch');
 require('dotenv').config({ path: 'src/SptrinterAPI/.env' });
 
 

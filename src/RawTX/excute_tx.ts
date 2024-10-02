@@ -30,14 +30,11 @@ async function sendSignedTransactionWithRawData() {
       nonce: nonce
   };
 
-  // Sign the transaction with your wallet
   const signedTx = await wallet.signTransaction(tx);
 
-  // Send the signed transaction
   const txResponse = await provider.sendTransaction(signedTx);
   console.log(`Transaction sent: ${txResponse.hash}`);
 
-  // Wait for the transaction to be confirmed
   const receipt = await txResponse.wait();
   console.log(`Transaction confirmed in block: ${receipt.blockNumber}`);
 }

@@ -1,6 +1,4 @@
-import { Web3 } from 'web3';
 const fs = require('fs')
-const fetch = require('node-fetch');
 
 const account = "0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626d";
 
