@@ -11,8 +11,8 @@ const abiPath = "src/ABIS/ERC721Payable.json";
 const contractABI = JSON.parse(fs.readFileSync(abiPath, "utf8"));
 const CONTRACT_ADDRESS = '0x1307Bd6EA044bede2f48Acc400CC856a63281722';
 const account = "0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626d";
-const id = 1016;
-const data = "String16";
+const id = 1031;
+const data = "String31";
 
 const contract = new web3js.eth.Contract(contractABI, CONTRACT_ADDRESS)
 const callData = contract.methods.mintPayable(account, id, data).encodeABI();
@@ -25,14 +25,14 @@ async function callApi() {
         account: account,
         token: "eth",
         amount: "10000000000000",
-        destination: 8333,
+        destination: 42161,
         destinationContractCall: {
             callData: callData,
             contractAddress: CONTRACT_ADDRESS,
-            gasLimit: 75000
+            gasLimit: 450000
         },
         type: "fungible",
-        whitelistedSourceChains: [8453]
+        whitelistedSourceChains: [10]
     };
 
     try {
