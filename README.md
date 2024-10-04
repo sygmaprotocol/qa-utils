@@ -1,4 +1,5 @@
 **QA Utils**
+
 This project contains Cypress E2E tests for Sprinter, specifically testing the GET request functionality in the sprinter_GET_testnet.cy.ts file.
 
 **Getting Started**
