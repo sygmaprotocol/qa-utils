@@ -24,14 +24,9 @@ async function callApi() {
         account: account,
         token: "eth",
         amount: "10000000000000",
-        destination: 42161,
-        destinationContractCall: {
-            callData: callData,
-            contractAddress: CONTRACT_ADDRESS,
-            gasLimit: 450000
-        },
+        destination: 8333,
         type: "fungible",
-        whitelistedSourceChains: [10]
+        whitelistedSourceChains: [1]
     };
 
     try {

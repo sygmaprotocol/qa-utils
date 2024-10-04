@@ -22,8 +22,8 @@ async function callApi() {
     const url = 'https://api.test.sprinter.buildwithsygma.com/solution/call';
     const data = {
         account: account,
-        token: "eth",
-        amount: "100000000000000", 
+        token: "USDC",
+        amount: "400", 
         destination: 84532,
         destinationContractCall: {
             callData: callData,

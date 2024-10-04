@@ -1,17 +1,17 @@
-namespace Get_Testnet {
-
+namespace Get_Mainnet {
+    
 const account = "0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626d";
 
 export async function callApi() {
-    const baseUrl = 'https://api.test.sprinter.buildwithsygma.com/solutions/aggregation';
+    const baseUrl = 'https://api.sprinter.buildwithsygma.com/solutions/aggregation';
     const params = new URLSearchParams({
         account: account,
-        token: "USDC",
-        amount: "2000000",
-        destination: String(84532), // Convert number to string
+        token: "ETH",
+        amount: "10000000000000",
+        destination: String(8333), // Convert number to string
         threshold: String(1),      // Convert number to string
         type: "fungible",
-        whitelistedSourceChains: [338].join(',') // Convert array to string
+        whitelistedSourceChains: [1].join(',') // Convert array to string
     });
 
     const url = `${baseUrl}?${params.toString()}`;
@@ -38,4 +38,4 @@ export async function callApi() {
 }
 }
 
-Get_Testnet.callApi();
+Get_Mainnet.callApi()

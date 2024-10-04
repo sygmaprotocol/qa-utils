@@ -8,20 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var Get_Testnet;
-(function (Get_Testnet) {
+var Get_Mainnet;
+(function (Get_Mainnet) {
     const account = "0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626d";
     function callApi() {
         return __awaiter(this, void 0, void 0, function* () {
-            const baseUrl = 'https://api.test.sprinter.buildwithsygma.com/solutions/aggregation';
+            const baseUrl = 'https://api.sprinter.buildwithsygma.com/solutions/aggregation';
             const params = new URLSearchParams({
                 account: account,
-                token: "USDC",
-                amount: "2000000",
-                destination: String(84532), // Convert number to string
+                token: "ETH",
+                amount: "10000000000000",
+                destination: String(8333), // Convert number to string
                 threshold: String(1), // Convert number to string
                 type: "fungible",
-                whitelistedSourceChains: [338].join(',') // Convert array to string
+                whitelistedSourceChains: [1].join(',') // Convert array to string
             });
             const url = `${baseUrl}?${params.toString()}`;
             try {
@@ -42,6 +42,6 @@ var Get_Testnet;
             }
         });
     }
-    Get_Testnet.callApi = callApi;
-})(Get_Testnet || (Get_Testnet = {}));
-Get_Testnet.callApi();
+    Get_Mainnet.callApi = callApi;
+})(Get_Mainnet || (Get_Mainnet = {}));
+Get_Mainnet.callApi();
