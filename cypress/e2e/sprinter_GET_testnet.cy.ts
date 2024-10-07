@@ -197,6 +197,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
+  // BUG here
   it.skip('GET request assets/fungible/{token} = WETH', () => {
     const apiUrl = `${baseUrl}/assets/fungible/usdc`
     cy.api({
@@ -272,6 +273,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
+  // BUG here
   it.skip('GET request /networks/{chainID}/assets/fungible - Sepolia', () => {
     const apiUrl = `${baseUrl}/networks/${params.sepolia_chainID}/assets/fungible`
     cy.api({
@@ -312,7 +314,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
-  it('GET request /solutions/aggregation - Sepolia to Base with USDC', () => {
+  it('GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data', () => {
     const queryParams = new URLSearchParams({
       account:`${params.your_wallet}`,
       destination: `${params.base_chainID}`,
@@ -356,6 +358,307 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
   
     });
   });
+
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with bad account format', () => {
+    const queryParams = new URLSearchParams({
+      account:`0xB99437c5B65e7B65429b3687cF6A4cFF482C147`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: '12000000',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Key: 'queryParams.Account' Error:Field validation for 'Account' failed on the 'eth_address' tag`);
+  
+    });
+  });
+
+  
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with bad token format USDP', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdp',
+      amount: '12000000',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Key: 'queryParams.Token' Error:Field validation for 'Token' failed on the 'supported_token' tag`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount > source balance', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: '22987267',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`No solution found`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount === 0', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: '0',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Key: 'queryParams.Amount' Error:Field validation for 'Amount' failed on the 'big_gt' tag`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount with decimal order', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: '0.23',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`math/big: cannot unmarshal \"0.23\" into a *big.Int`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount set to a string', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: 'asdksas',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`invalid character 'a' looking for beginning of value`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - with invalid destination but exiting in Sygma Shared Config (338 - Cronos)', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `338`,
+      token:'usdc',
+      amount: '123',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Key: 'queryParams.Destination' Error:Field validation for 'Destination' failed on the 'supported_chain' tag`);
+  
+    });
+  });
+
+  // BUG here
+  it.skip('Negative - GET request /solutions/aggregation - with a bad whitelisteSourceChain id (338 Cronos)', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.base_chainID}`,
+      token:'usdc',
+      amount: '123',
+      threshold: `${params.threshold}`,
+      whitelistedSourceChains: `338`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Key: 'queryParams.Destination' Error:Field validation for 'Destination' failed on the 'supported_chain' tag`);
+  
+    });
+  });
+
+  it('Negative - GET request /solutions/aggregation - treshold < remaining balance', () => {
+    const queryParams = new URLSearchParams({
+      account:`${params.test_wallet_assertions}`,
+      destination: `${params.b3_chainID}`,
+      token:'usdc',
+      amount: '20987267',
+      threshold: `2000000`,
+      whitelistedSourceChains: `${params.sepolia_chainID}`
+    }).toString();
+
+    const apiUrl = `${baseUrl}/solutions/aggregation?${queryParams}`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`No solution found`);
+  
+    });
+  });
+
+
 
   it('GET request /solutions/aggregation - Base to B3 with ETH', () => {
     const queryParams = new URLSearchParams({

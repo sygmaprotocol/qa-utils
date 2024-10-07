@@ -109,5 +109,5 @@
   },
   
   "include": ["src/**/*","cypress/**/*.ts"],  // Include all files in the 'src' folder
-  "exclude": ["node_modules"]  // Exclude 'node_modules' folder
+  "exclude": ["node_modules","cypress/support" ]  // Exclude 'node_modules' folder
 }
