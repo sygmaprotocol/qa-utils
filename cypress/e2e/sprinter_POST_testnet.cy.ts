@@ -693,7 +693,7 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
     const data = {
       account: params.your_wallet,
       amount: params.b3_NFT_price_eth,
-      destination: params.base_chainID,
+      destination: params.b3_chainID,
       destinationContractCall: {
         // approvalAddress: params.contract_ERC721_b3,
         callData: this.callData_eth_minPayable,
@@ -706,7 +706,7 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
       token: 'eth',
       type: "fungible",
       whitelistedSourceChains: [
-        params.sepolia_chainID
+        params.base_chainID
       ]
     };
 
@@ -722,14 +722,14 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
       cy.log(JSON.stringify(response.body));
       // Assertions
       expect(response.status).to.eq(200); // Validate status code for created resource
-    //   expect(response.body).to.have.property('data');
-    //   expect(response.body.data[0].sourceChain).equal(params.base_chainID);
-    //   expect(response.body.data[0].destinationChain).equal(params.b3_chainID);
-    //   expect(response.body.data[0].amount).equal(`${params.b3_NFT_price_eth}`);
-    //   expect(response.body.data[0]).to.have.property('transaction');
-    //   expect(response.body.data[0].transaction.to).equal(params.base_native_contract);
-    //   expect(response.body.data[0].transaction.value).not.to.equal("0x0");
-    //   expect(response.body.data[0]).to.have.property('approvals').to.be.null;
+      expect(response.body).to.have.property('data');
+      expect(response.body.data[0].sourceChain).equal(params.base_chainID);
+      expect(response.body.data[0].destinationChain).equal(params.b3_chainID);
+      expect(response.body.data[0].amount).equal(`${params.b3_NFT_price_eth}`);
+      expect(response.body.data[0]).to.have.property('transaction');
+      expect(response.body.data[0].transaction.to).equal(params.base_native_contract);
+      expect(response.body.data[0].transaction.value).not.to.equal("0x0");
+      expect(response.body.data[0]).to.have.property('approvals').to.be.null;
     });
   });
 
