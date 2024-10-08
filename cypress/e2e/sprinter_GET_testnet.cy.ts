@@ -316,7 +316,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.your_wallet}`,
+      account:params.your_wallet,
       destination: `${params.base_chainID}`,
       token:'usdc',
       amount: '12000000',
@@ -395,7 +395,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
   
   it('Negative - GET request /solutions/aggregation - Sepolia to Base with bad token format USDP', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.base_chainID}`,
       token:'usdp',
       amount: '12000000',
@@ -428,7 +428,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount > source balance', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.base_chainID}`,
       token:'usdc',
       amount: '22987267',
@@ -461,7 +461,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount === 0', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.base_chainID}`,
       token:'usdc',
       amount: '0',
@@ -494,7 +494,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount with decimal order', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.base_chainID}`,
       token:'usdc',
       amount: '0.23',
@@ -527,7 +527,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - Sepolia to Base with USDC with all valid data except amount set to a string', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.base_chainID}`,
       token:'usdc',
       amount: 'asdksas',
@@ -560,7 +560,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - with invalid destination but exiting in Sygma Shared Config (338 - Cronos)', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `338`,
       token:'usdc',
       amount: '123',
@@ -627,7 +627,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
 
   it('Negative - GET request /solutions/aggregation - treshold < remaining balance', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.test_wallet_assertions}`,
+      account:params.test_wallet_assertions,
       destination: `${params.b3_chainID}`,
       token:'usdc',
       amount: '20987267',
@@ -658,11 +658,9 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
-
-
   it('GET request /solutions/aggregation - Base to B3 with ETH', () => {
     const queryParams = new URLSearchParams({
-      account:`${params.your_wallet}`,
+      account:params.your_wallet,
       destination: `${params.b3_chainID}`,
       token:'eth',
       amount: '1000000000000000',
