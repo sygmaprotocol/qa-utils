@@ -16,17 +16,18 @@ const data = "String31";
 const contract = new web3js.eth.Contract(contractABI, CONTRACT_ADDRESS)
 const callData = contract.methods.mintPayable(account, id, data).encodeABI();
 
-console.log("This is the callData from request " +callData);
+// console.log("This is the callData from request " +callData);
 
 async function callApi() {
     const url = 'https://api.sprinter.buildwithsygma.com/solution/call';
     const data = {
         account: account,
-        token: "eth",
-        amount: "10000000000000",
-        destination: 8333,
+        amount: "1000000", 
+        destination: 8453,   //   b3 8333
+        threshold:"1",
+        token: "usdc",
         type: "fungible",
-        whitelistedSourceChains: [1]
+        whitelistedSourceChains: [8333]
     };
 
     try {
@@ -40,7 +41,8 @@ async function callApi() {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorBody = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(errorBody)}`);
         }
 
         const jsonResponse = await response.json();
@@ -48,7 +50,11 @@ async function callApi() {
         console.log('Response:', JSON.stringify(jsonResponse, null, 2));
 
     } catch (error) {
-        console.error('Error:', error);
+        if (error instanceof Error) {
+            console.error('Error:', error.message);
+        } else {
+            console.error('Unknown error:', error);
+        }
     }
 }
 

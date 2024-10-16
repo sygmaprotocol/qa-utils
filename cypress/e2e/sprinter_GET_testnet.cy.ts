@@ -6,8 +6,15 @@ const params = {
   test_wallet_assertions:'0xB99437c5B65e7B65429b368b7cF6A4cFF482C147',
   token: "usdc",
   sepolia_chainID : 11155111, 
+  sep_USDC_contract: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  sep_SYGMA_WETH_contract: "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+  sep_SPRINTER_WETH_contract: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
   base_chainID : 84532, 
+  base_USDC_contract: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  base_WETH_contract: "0x4200000000000000000000000000000000000006", 
   b3_chainID : 1993,
+  b3_USDC_contract: "0xE61e5ed4c4f198c5384Ef57E69aAD1eF0c911004",
+  b3_WETH_contract: "0x3538f4C55893eDca690D1e4Cf9Fb61FB70cd0DD8",
   amount_usdc_sepolia : 21987267, // used in assertion 
   amount_usdc_base : 3878710, // used in assertion
   amount_usdc_b3 : 5782100, // used in assertion
@@ -158,9 +165,81 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       expect(balanceBase).to.be.equal(params.amount_eth_base)
     });
   });
+
+  it('Negative - GET request /accounts/{account}/assets/native with bad account format missing one character', () => {
+    const apiUrl = `${baseUrl}/accounts/0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626/assets/native`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(400); 
+      
+    });
+  });
+
+
+  it('Negative - GET request /accounts/{account}/assets/native with bad account format polkadot format', () => {
+      const apiUrl = `${baseUrl}/accounts/5GjowPEaFNnwbrmpPuDmBVdF2e7n3cHwk2LnUwHXsaW5KtEL/assets/native`
+      cy.api({
+        method: 'GET',
+        url: apiUrl,
+        failOnStatusCode: false
+      }).then((response) => {
+        cy.log(JSON.stringify(response.body));
+        cy.log('Response Status:', response.status.toString());
+        cy.log('Response Headers:', JSON.stringify(response.headers))
+  
+        const responseBody = JSON.stringify(response.body, null, 2);
+        const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+        cy.log('Response Body:', truncatedBody); 
+        console.log('Full Response Body:', response.body); 
+       
+        // Assertions
+        expect(response.status).to.eq(400); 
+        
+      });
+    });
   
   it('GET request assets/fungible/{token} = USDC', () => {
     const apiUrl = `${baseUrl}/assets/fungible/usdc`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(200); 
+      expect(response.body).to.have.property('addresses'); 
+      console.log("This is address for sep", response.body.addresses)
+
+      expect(response.body.addresses[params.sepolia_chainID]).to.be.equal(params.sep_USDC_contract);
+      expect(response.body.addresses[params.base_chainID]).to.be.equal(params.base_USDC_contract);
+      expect(response.body.addresses[params.b3_chainID]).to.be.equal(params.b3_USDC_contract);
+
+    });
+  });
+
+  it('GET request assets/fungible/{token} = WETH', () => {
+    const apiUrl = `${baseUrl}/assets/fungible/weth`
     cy.api({
       method: 'GET',
       url: apiUrl,
@@ -190,19 +269,20 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       //   (item: { name: string }) => item.name === name_USDC
       // )?.addresses[params.destination_b3];
 
-      expect(address_usdc_sep).to.be.equal('0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
-      expect(address_usdc_base).to.be.equal('0x036CbD53842c5426634e7929541eC2318f3dCF7e');
-      expect(address_usdc_b3).to.be.equal('0xE61e5ed4c4f198c5384Ef57E69aAD1eF0c911004');
+      expect(response.body.addresses[params.sepolia_chainID]).to.be.oneOf([params.sep_SYGMA_WETH_contract, params.sep_SPRINTER_WETH_contract]);
+      expect(response.body.addresses[params.base_chainID]).to.be.equal(params.base_WETH_contract);
+      expect(response.body.addresses[params.b3_chainID]).to.be.equal(params.b3_WETH_contract);
 
     });
   });
 
-  // BUG here
-  it.skip('GET request assets/fungible/{token} = WETH', () => {
-    const apiUrl = `${baseUrl}/assets/fungible/usdc`
+  // ETH not yet added as fungible
+  it.skip('GET request assets/fungible/{token} = ETH', () => {
+    const apiUrl = `${baseUrl}/assets/fungible/ETH`
     cy.api({
       method: 'GET',
       url: apiUrl,
+      failOnStatusCode: false
     }).then((response) => {
       cy.log(JSON.stringify(response.body));
       cy.log('Response Status:', response.status.toString());
@@ -218,9 +298,9 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       expect(response.body).to.have.property('addresses'); 
       console.log("This is address for sep", response.body.addresses)
 
-      const address_weth_sep = response.body.addresses[params.sepolia_chainID]
-      const address_weth_base = response.body.addresses[params.base_chainID]
-      const address_weth_b3 = response.body.addresses[params.b3_chainID]
+      // const address_usdc_sep = response.body.addresses[params.sepolia_chainID]
+      // const address_usdc_base = response.body.addresses[params.base_chainID]
+      // const address_usdc_b3 = response.body.addresses[params.b3_chainID]
 
       // const address_usdc_base = response.body.data.find(
       //   (item: { name: string }) => item.name === name_USDC
@@ -229,14 +309,40 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       //   (item: { name: string }) => item.name === name_USDC
       // )?.addresses[params.destination_b3];
 
-      expect(address_weth_sep).to.be.equal('0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9');
-      expect(address_weth_base).to.be.equal('0x4200000000000000000000000000000000000006');
-      expect(address_weth_b3).to.be.equal('0x3538f4C55893eDca690D1e4Cf9Fb61FB70cd0DD8');
+      expect(response.body.addresses[params.sepolia_chainID]).to.be.equal('0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
+      expect( response.body.addresses[params.base_chainID]).to.be.equal('0x4200000000000000000000000000000000000006');
+      expect(response.body.addresses[params.b3_chainID]).to.be.equal('0x3538f4C55893eDca690D1e4Cf9Fb61FB70cd0DD8');
 
     });
   });
 
-  it('GET request /accounts/{account}/assets/fungible/{token}', () => {
+  it('Negative - GET request assets/fungible/{token} = USDP', () => {
+    const apiUrl = `${baseUrl}/assets/fungible/usdp`
+    cy.api({
+      method: 'GET',
+      url: apiUrl,
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      cy.log('Response Status:', response.status.toString());
+      cy.log('Response Headers:', JSON.stringify(response.headers))
+
+      const responseBody = JSON.stringify(response.body, null, 2);
+      const truncatedBody = responseBody.length > 1000 ? responseBody.substring(0, 1000) + '...' : responseBody;
+      cy.log('Response Body:', truncatedBody); 
+      console.log('Full Response Body:', response.body); 
+     
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error');
+      expect(response.body.error).equal(`Unknown fungible token`);
+
+ 
+
+    });
+  });
+
+  it('GET request /accounts/{account}/assets/fungible/{token} - USDC', () => {
     const apiUrl = `${baseUrl}/accounts/${params.test_wallet_assertions}/assets/fungible/${params.token}`
     cy.api({
       method: 'GET',
@@ -273,8 +379,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
-  // BUG here
-  it.skip('GET request /networks/{chainID}/assets/fungible - Sepolia', () => {
+  it('GET request /networks/{chainID}/assets/fungible - Sepolia', () => {
     const apiUrl = `${baseUrl}/networks/${params.sepolia_chainID}/assets/fungible`
     cy.api({
       method: 'GET',
@@ -292,25 +397,19 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       // Assertions
       expect(response.status).to.eq(200); 
       expect(response.body).to.have.property('data'); 
-      const name_USDC = response.body.data[0].name;
-      const name_WETH = response.body.data[1].name;
-      expect(name_USDC).to.exist.and.be.equal('USDC');
-      expect(name_WETH).to.exist.and.be.equal('Wrapped ETH');
+      expect(response.body.data[0].name).to.exist.and.be.equal('USDC');
+      expect(response.body.data[1].name).to.exist.and.be.equal('Wrapped ETH');
+
+      const usdcObject = response.body.data.find((item: any) => item.name === "USDC");
+      const wethObject = response.body.data.find((item: any) => item.name === "Wrapped ETH");
       
-      const address_usdc_sep = response.body.data.find(
-        (item: { name: string }) => item.name === name_USDC
-      )?.addresses[params.sepolia_chainID];
-      const address_usdc_base = response.body.data.find(
-        (item: { name: string }) => item.name === name_USDC
-      )?.addresses[params.base_chainID];
-      const address_usdc_b3 = response.body.data.find(
-        (item: { name: string }) => item.name === name_USDC
-      )?.addresses[params.b3_chainID];
+      expect(usdcObject.addresses[params.sepolia_chainID]).to.be.equal(params.sep_USDC_contract);
+      expect(usdcObject.addresses[params.base_chainID]).to.be.equal(params.base_USDC_contract);
+      expect(usdcObject.addresses[params.b3_chainID]).to.be.equal(params.b3_USDC_contract);
 
-      expect(address_usdc_sep).to.exist.and.be.equal('0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
-      expect(address_usdc_base).to.exist.and.be.equal('0x036CbD53842c5426634e7929541eC2318f3dCF7e');
-      expect(address_usdc_b3).to.exist.and.be.equal('0xE61e5ed4c4f198c5384Ef57E69aAD1eF0c911004');
-
+      expect(wethObject.addresses[params.sepolia_chainID]).to.be.oneOf([params.sep_SYGMA_WETH_contract, params.sep_SPRINTER_WETH_contract]);
+      expect(wethObject.addresses[params.base_chainID]).to.be.equal(params.base_WETH_contract);
+      expect(wethObject.addresses[params.b3_chainID]).to.be.equal(params.b3_WETH_contract);
     });
   });
 
@@ -591,7 +690,7 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
     });
   });
 
-  // BUG here
+  // BUG here https://github.com/ChainSafe/sprinter-api/issues/262 - > https://github.com/ChainSafe/sprinter-api/issues/257
   it.skip('Negative - GET request /solutions/aggregation - with a bad whitelisteSourceChain id (338 Cronos)', () => {
     const queryParams = new URLSearchParams({
       account:`${params.test_wallet_assertions}`,
@@ -697,4 +796,5 @@ describe('Sprinter API Testing on Testnet for all GET calls', () => {
       expect(response.body.data[0].approvals).is.null;      
     });
   });
+  
 });

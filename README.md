@@ -30,8 +30,18 @@ yarn install
 You can run the sprinter_GET_testnet.cy.ts tests using the following commands:
 
 *Running Tests in Headless Mode(using Electron by default)*
+
+For all the GET tests
 ```
-yarn cypress:run:GET
+yarn cypress:run:GET 
+```
+For all the POST tests
+```
+yarn cypress:run:POST 
+```
+For all the Sprinter tests
+```
+yarn cypress:run:TESTS 
 ```
 
 *Running Tests in the Cypress Test Runner (GUI)*
