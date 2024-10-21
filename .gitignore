@@ -4,3 +4,6 @@ src/SptrinterAPI/.env
 node_modules/
 yarn.lock
 cypress/screenshots
+cypress/downloads
+cypress/reports
+cypress/screenshots

@@ -11,6 +11,7 @@ require('dotenv').config({ path: 'src/SptrinterAPI/.env' });
 const params = {
   your_wallet:'0x9A17FA0A2824EA855EC6aD3eAb3Aa2516EC6626d',
   test_wallet_assertions:'0xB99437c5B65e7B65429b368b7cF6A4cFF482C147',
+  test_weth_wallet:'0x8672F5C85066F7C0fc52e88398de052Bb0920927',
   token: "usdc",
   sepolia_chainID : 11155111, 
   contract_Sprinter_sep:"0xf70fb86F700E8Bb7cDf1c20197633518235c3425",
@@ -18,6 +19,8 @@ const params = {
   sep_bridge_contract: "0x4CF326d3817558038D1DEF9e76b727202c3E8492",
   sep_native_contract: "0xb55D0F87eE4a76fAa2f1d01A5abf3f1EB1bbFdd6",
   contract_ERC721_sep: "0x99eb23BEC48bF56C80889cFbcBF2d491F8aC75fe",
+  sep_SYGMA_WETH_contract: "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+  sep_SPRINTER_WETH_contract: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
   sep_NFT_price_eth: 10000000,
   base_chainID : 84532,
   contract_Sprinter_base: "0x3F9A68fF29B3d86a6928C44dF171A984F6180009",
@@ -25,6 +28,7 @@ const params = {
   base_bridge_contract: "0x9D5C332Ebe0DaE36e07a4eD552Ad4d8c5067A61F",
   base_native_contract: "0x6b3BB80A93087CF0eABb72c6a1654C979586E15B",
   contract_ERC721_base: "0xAf8De6Aa5004E8e323DCC93C683A55e5eE87b9e9",
+  base_WETH_contract: "0x4200000000000000000000000000000000000006",
   base_NFT_price_eth: 100000000000000,
   b3_chainID : 1993,
   contract_Sprinter_b3: "0x17e4C404aD634E429ebCdF9a10F38A96Ce8eEF27",
@@ -32,6 +36,7 @@ const params = {
   b3_bridge_contract: "0xFF92C3C393B22F9d26e5732F2601EaC04094880F",
   b3_native_contract: "0x7f1B01c8daFa8B8Ce843A47f85458C0F26B6b47b",
   contract_ERC721_b3: "0xAf8De6Aa5004E8e323DCC93C683A55e5eE87b9e9",
+  b3_WETH_contract: "0x3538f4C55893eDca690D1e4Cf9Fb61FB70cd0DD8",
   b3_NFT_price_eth: 100000000000000,
   amount_usdc_sepolia : 21987267, // used in assertion 
   amount_usdc_base : 3878710, // used in assertion
@@ -284,6 +289,54 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
     });
   });
 
+  it('POST solution/call - Valid data using USDC from Sep to Base using amount === 0', function () {
+    const data = {
+      account: params.test_wallet_assertions,
+      amount: "0",
+      destination: params.base_chainID,
+      destinationContractCall: {
+        approvalAddress: params.contract_Sprinter_base,
+        callData: this.callData_usdc_2000000,
+        contractAddress: params.contract_Sprinter_base,
+        gasLimit: 420000,
+        outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_wallet_assertions,
+      threshold: `${params.threshold}`,
+      token: "USDC",
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.sepolia_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      failOnStatusCode: false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(200); // Validate status code for created resource
+      expect(response.body).to.have.property('data');
+      expect(response.body.data[0].sourceChain).equal(params.sepolia_chainID);
+      expect(response.body.data[0].destinationChain).equal(params.base_chainID);
+      expect(response.body.data[0].amount).equal("0");
+      expect(response.body.data[0]).to.have.property('transaction');
+      expect(response.body.data[0].transaction.to).equal(params.sep_bridge_contract);
+      expect(response.body.data[0].transaction.value).not.to.equal("0x0");
+      expect(response.body.data[0]).to.have.property('approvals');
+      expect(response.body.data[0].approvals[0].to).equal(params.sep_USDC_contract);
+      expect(response.body.data[0].approvals[0].value).equal('0x0');
+      expect(response.body.data[0].approvals[0].chainId).equal(params.sepolia_chainID);
+    });
+  });
+
   it('Negative POST solution/call - Valid data using USDC from Sep to Base except account being correct', function () {
     const data = {
       account: "0xB99437c5B65e7B65429b368b7cF6A4cFF482C14",
@@ -432,44 +485,6 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
       // Assertions
       expect(response.status).to.eq(404);
       expect(response.body).to.have.property('error').equal("No solution found"); 
-    });
-  });
-
-  it('Negative POST solution/call - Valid data using USDC from Sep to Base using amount === 0', function () {
-    const data = {
-      account: params.test_wallet_assertions,
-      amount: "0",
-      destination: params.base_chainID,
-      destinationContractCall: {
-        approvalAddress: params.contract_Sprinter_base,
-        callData: this.callData_usdc_2000000,
-        contractAddress: params.contract_Sprinter_base,
-        gasLimit: 420000,
-        outputTokenAddress: params.base_USDC_contract
-      },
-      recipient: params.test_wallet_assertions,
-      threshold: `${params.threshold}`,
-      token: "USDC",
-      type: "fungible",
-      whitelistedSourceChains: [
-        params.sepolia_chainID
-      ]
-    };
-
-    cy.api({
-      method: 'POST',
-      url: `${baseUrl}/solution/call`,
-      body: data,
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      failOnStatusCode: false
-    }).then((response) => {
-      cy.log(JSON.stringify(response.body));
-      // Assertions
-      expect(response.status).to.eq(400);
-      expect(response.body).to.have.property('error').equal("Key: 'request.Amount' Error:Field validation for 'Amount' failed on the 'big_gt' tag"); 
     });
   });
 
@@ -780,6 +795,224 @@ describe('Sprinter API Testing on Testnet for all POST calls', () => {
       expect(response.body.data[0].transaction.to).equal(params.base_native_contract);
       expect(response.body.data[0].transaction.value).not.to.equal("0x0");
       expect(response.body.data[0]).to.have.property('approvals').to.be.null;
+    });
+  });
+
+  // POST  solution/call WETH + ETH
+  it('POST solution/call - Valid response with ETH + WETH from Sepolia to B3 using Sprinter contract for mintPayable where TransferAmount (TA) > ETH AND TA < ETH + WETH  AND Treshold < remaining balance', function () {
+    const data = {
+      account: params.test_weth_wallet,
+      amount: "200000000000000000",
+      destination: params.b3_chainID,
+      destinationContractCall: {
+        // approvalAddress: params.contract_ERC721_b3,
+        callData: this.callData_eth_minPayable,
+        contractAddress: params.contract_ERC721_b3,
+        gasLimit: 420000,
+        // outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_weth_wallet,
+      threshold: `1`,
+      token: 'eth',
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.sepolia_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(200); 
+      expect(response.body).to.have.property('data');
+     
+      const unwrapObject = response.body.data.find((item: any) => item.destinationChain === params.sepolia_chainID);
+      const depositObject = response.body.data.find((item: any) => item.destinationChain === params.b3_chainID);
+
+      expect(unwrapObject.sourceChain).equal(params.sepolia_chainID);
+      expect(unwrapObject.transaction.to).to.be.oneOf([params.sep_SYGMA_WETH_contract, params.sep_SPRINTER_WETH_contract]);
+      expect(unwrapObject.transaction.value).equal("0x0");
+      expect(unwrapObject.transaction.chainId).equal(params.sepolia_chainID);
+
+      expect(depositObject.sourceChain).equal(params.sepolia_chainID);
+      expect(depositObject.transaction.to).equals(params.sep_native_contract);
+      expect(depositObject.transaction.value).not.to.equal("0x0");
+
+      expect(response.body.data[0]).to.have.property('approvals').to.be.null;
+
+    });
+  });
+
+  it('POST solution/call - Valid response with ETH + WETH from Sepolia to B3 using Sprinter contract for mintPayable where TransferAmount (TA) < ETH AND TA < ETH + WETH  AND Treshold < remaining balance', function () {
+    const data = {
+      account: params.test_weth_wallet,
+      amount: "120000000000000000",
+      destination: params.b3_chainID,
+      destinationContractCall: {
+        // approvalAddress: params.contract_ERC721_b3,
+        callData: this.callData_eth_minPayable,
+        contractAddress: params.contract_ERC721_b3,
+        gasLimit: 420000,
+        // outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_weth_wallet,
+      threshold: `1`,
+      token: 'eth',
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.sepolia_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(200); 
+      expect(response.body).to.have.property('data');
+
+      expect(response.body.data[0].sourceChain).equal(params.sepolia_chainID);
+      expect(response.body.data[0].destinationChain).equal(params.b3_chainID);
+      expect(response.body.data[0].transaction.to).equal(params.sep_native_contract);
+      expect(response.body.data[0].transaction.value).not.to.equal("0x0");
+     
+      expect(response.body.data[0]).to.have.property('approvals').to.be.null;
+
+    });
+  });
+
+  it('Negative POST solution/call - Valid response with ETH + WETH from Sepolia to B3 using Sprinter contract for mintPayable where TransferAmount (TA) > ETH AND TA > ETH + WETH  AND Treshold = 1', function () {
+    const data = {
+      account: params.test_weth_wallet,
+      amount: "350000000000000000",
+      destination: params.b3_chainID,
+      destinationContractCall: {
+        // approvalAddress: params.contract_ERC721_b3,
+        callData: this.callData_eth_minPayable,
+        contractAddress: params.contract_ERC721_b3,
+        gasLimit: 420000,
+        // outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_weth_wallet,
+      threshold: `1`,
+      token: 'eth',
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.sepolia_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      failOnStatusCode:false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error').equals("No solution found");
+
+    });
+  });
+
+  it('Negative POST solution/call - Valid response with ETH + WETH from Sepolia to B3 using Sprinter contract for mintPayable where TransferAmount (TA) > ETH AND TA > ETH + WETH  AND Treshold = 1', function () {
+    const data = {
+      account: "0x351657b100E8F3c7dA56f583FBb3582428f997e4",
+      amount: "1000000000000000",
+      destination: params.b3_chainID,
+      destinationContractCall: {
+        // approvalAddress: params.contract_ERC721_b3,
+        callData: this.callData_eth_minPayable,
+        contractAddress: params.contract_ERC721_b3,
+        gasLimit: 420000,
+        // outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_weth_wallet,
+      threshold: `1`,
+      token: 'eth',
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.sepolia_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      failOnStatusCode:false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error').equals("No solution found");
+      expect(response.body).to.have.property('debug').contains("user doesn't have enough funds to execute solution\nacross");
+
+    });
+  });
+
+  // BUG https://github.com/ChainSafe/sprinter-api/issues/282 
+  it.skip('Negative POST solution/call - Valid response with ETH + WETH from Base to B3 using Sprinter contract for mintPayable where TransferAmount (TA) > ETH AND TA > ETH + WETH  AND Treshold = 1', function () {
+    const data = {
+      account: params.test_weth_wallet,
+      amount: "70000000000000000",
+      destination: params.b3_chainID,
+      destinationContractCall: {
+        // approvalAddress: params.contract_ERC721_b3,
+        callData: this.callData_eth_minPayable,
+        contractAddress: params.contract_ERC721_b3,
+        gasLimit: 420000,
+        // outputTokenAddress: params.base_USDC_contract
+      },
+      recipient: params.test_weth_wallet,
+      threshold: `70000000000000000`,
+      token: 'eth',
+      type: "fungible",
+      whitelistedSourceChains: [
+        params.base_chainID
+      ]
+    };
+
+    cy.api({
+      method: 'POST',
+      url: `${baseUrl}/solution/call`,
+      body: data,
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      failOnStatusCode:false
+    }).then((response) => {
+      cy.log(JSON.stringify(response.body));
+      // Assertions
+      expect(response.status).to.eq(404); 
+      expect(response.body).to.have.property('error').equals("No solution found");
+      expect(response.body).to.have.property('debug').contains("user doesn't have enough funds to execute solution\nacross");
+
     });
   });
 
