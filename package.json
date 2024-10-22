@@ -1,11 +1,16 @@
 {
   "dependencies": {
+    "@buildwithsygma/core": "^1.4.0",
+    "@buildwithsygma/evm": "^1.5.0",
+    "@buildwithsygma/substrate": "^1.0.4",
+    "axios": "^1.7.7",
     "cypress-plugin-api": "^2.11.2",
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "node-fetch": "^2.7.0",
     "ts-node": "^10.9.2",
-    "web3": "^4.13.0"
+    "web3": "^4.13.0",
+    "web3-providers-http": "1.10.4"
   },
   "devDependencies": {
     "@types/cypress": "^1.1.3",

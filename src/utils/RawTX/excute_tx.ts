@@ -1,6 +1,6 @@
 import { ethers }  from 'ethers';
 const fs = require("fs");
-require('dotenv').config({ path: 'src/RawTX/.env' });
+require('dotenv').config({ path: 'src/utils/RawTX/.env' });
 
 const abiPath = "src/ABIS/nativeAdapter.json"; 
 const contractABI = JSON.parse(fs.readFileSync(abiPath, "utf8"));

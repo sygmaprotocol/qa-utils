@@ -1,6 +1,6 @@
 import { ethers, BigNumber } from 'ethers';
 const fs = require("fs");
-require('dotenv').config({ path: 'src/AbiTX/.env' });
+require('dotenv').config({ path: 'src/utils/AbiTX/.env' });
 
 async function sendTransactionToContract(input: number) {
     const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);

@@ -1,6 +1,6 @@
 import { Web3 } from 'web3';
 const fs = require('fs')
-require('dotenv').config({ path: 'src/SptrinterAPI/.env' });
+require('dotenv').config({ path: 'src/utils/SptrinterAPI/.env' });
 
 
 const providerURL = process.env.PROVIDER_URL;
