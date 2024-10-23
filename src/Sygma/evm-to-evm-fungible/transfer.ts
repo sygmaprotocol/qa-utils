@@ -23,9 +23,9 @@ interface Domain {
   type: string;
 }
 
-const testDomainIDs: number[] = [2, 5, 10]; // all:  2,  5,  6,  8, 9, 10, 11, 15
+const testDomainIDs: number[] = [2, 5]; // all:  2,  5,  6,  8, 9, 10, 11, 15
 const testResourceIds: string[] = [
-  "0x0000000000000000000000000000000000000000000000000000000000001200"
+  "0x0000000000000000000000000000000000000000000000000000000000001100",
 ];
 let sharedEVMDomainIDs: number[] = [];
 let sharedConfig: any;
@@ -69,17 +69,11 @@ if (!privateKey) {
   throw new Error("Missing environment variable: PRIVATE_KEY");
 }
 
-const SOURCE_CHAIN_ID = 8333;
-
-// const explorerUrls: Record<number, string> = {
-//   [SOURCE_CHAIN_ID]: "https://sepolia.etherscan.io",
-// };
-
-
 const getTxExplorerUrl = (params: {
   txHash: string;
   chainId: number;
-}): string => process.env[`SCAN_URL_${params.chainId}`] + `/tx/${params.txHash}`;
+}): string =>
+  process.env[`SCAN_URL_${params.chainId}`] + `/tx/${params.txHash}`;
 
 export async function erc20Transfer(
   SOURCE_CHAIN_IDs: number[],
@@ -112,32 +106,62 @@ export async function erc20Transfer(
                     amount: BigInt(1) * BigInt(10 ** amountDecimals),
                     recipientAddress: destinationAddress,
                     sourceAddress: sourceAddress,
-                    environment:process.env.SYGMA_ENV as Environment
+                    environment: process.env.SYGMA_ENV as Environment,
                   };
-                  console.log("Params", params)
-                  const transfer = await createFungibleAssetTransfer(params);
-                  const approvals = await transfer.getApprovalTransactions();
-                  console.log(`Approving Tokens (${approvals.length})...`);
+                  console.log("Params", params);
+                  try {
+                    const transfer = await createFungibleAssetTransfer(params);
+                    const approvals = await transfer.getApprovalTransactions();
+                    console.log(`Approving Tokens (${approvals.length})...`);
 
-                  for (const approval of approvals) {
-                    const response = await wallet.sendTransaction(approval);
+                    for (const approval of approvals) {
+                      try {
+                        const response = await wallet.sendTransaction(approval);
+                        await response.wait();
+                        console.log(
+                          `Approved, transaction: ${getTxExplorerUrl({
+                            txHash: response.hash,
+                            chainId: SourceChainID,
+                          })}`
+                        );
+                      } catch (approvalError) {
+                        if (approvalError instanceof Error) {
+                          console.error(
+                            `Error during transfer transaction: ${approvalError.message}`
+                          );
+                        } else {
+                          console.error(
+                            `Unknown error occurred: ${JSON.stringify(
+                              approvalError
+                            )}`
+                          );
+                        }
+                        continue;
+                      }
+                    }
+                    const transferTx = await transfer.getTransferTransaction();
+                    const response = await wallet.sendTransaction(transferTx);
                     await response.wait();
                     console.log(
-                      `Approved, transaction: ${getTxExplorerUrl({
-                        txHash: response.hash,
-                        chainId: SourceChainID,
-                      })}`
+                      `Depositted, transaction:  ${getSygmaScanLink(
+                        response.hash,
+                        process.env.SYGMA_ENV as Environment
+                      )}`
                     );
+                  } catch (transferError) {
+                    if (transferError instanceof Error) {
+                      console.error(
+                        `Error during transfer transaction: ${transferError.message}`
+                      );
+                    } else {
+                      console.error(
+                        `Unknown error occurred: ${JSON.stringify(
+                          transferError
+                        )}`
+                      );
+                    }
+                    continue;
                   }
-                  const transferTx = await transfer.getTransferTransaction();
-                  const response = await wallet.sendTransaction(transferTx);
-                  await response.wait();
-                  console.log(
-                    `Depositted, transaction:  ${getSygmaScanLink(
-                      response.hash,
-                      process.env.SYGMA_ENV as Environment
-                    )}`
-                  );
                   await wait(10000);
                 }
               }
